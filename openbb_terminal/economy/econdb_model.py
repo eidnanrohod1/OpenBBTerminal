@@ -475,9 +475,9 @@ def get_macro_data(
     start_date=pd.to_datetime("1900-01-01"),
     end_date=datetime.today().date(),
     convert_currency=False,
+    free_parameter:str,
 ) -> Tuple[Any, Union[str, Any]]:
     """Query the EconDB database to find specific macro data about a company [Source: EconDB]
-
     Parameters
     ----------
     parameter: str
@@ -490,7 +490,8 @@ def get_macro_data(
         The end date, format "YEAR-MONTH-DAY", i.e. 2020-06-05.
     convert_currency : str
         In what currency you wish to convert all values.
-
+    free_parameter: str
+        This is the generic ticker we will use to use the API 
     Returns
     ----------
     pd.Series
@@ -501,16 +502,25 @@ def get_macro_data(
     country = country.replace(" ", "_")
     country = country[0].upper() + country[1:]
     parameter = parameter.upper()
-
-    if country not in COUNTRY_CODES:
-        console.print(f"No data available for the country {country}.")
-        return pd.Series(dtype=float), ""
-    if parameter not in PARAMETERS:
-        console.print(f"The parameter {parameter} is not an option for {country}.")
-        return pd.Series(dtype=float), ""
-
-    country_code = COUNTRY_CODES[country]
-    country_currency = COUNTRY_CURRENCIES[country]
+    
+    if free_parameter="":
+        if country not in COUNTRY_CODES:
+            console.print(f"No data available for the country {country}.")
+            return pd.Series(dtype=float), ""
+        if parameter not in PARAMETERS:
+            console.print(f"The parameter {parameter} is not an option for {country}.")
+            return pd.Series(dtype=float), ""
+        country_code = COUNTRY_CODES[country]
+        country_currency = COUNTRY_CURRENCIES[country]
+    else:
+        parameter = free_parameter.upper()
+        country_code=""
+    '''
+    I included an "IF" inside the original block. Now, in case "free_parameter" is equal to a null value,
+    we continue with the original get_macro_data function.
+    Otherwise, "parameter" receives "free_parameter" and "country_code" receives a null value.
+    The rest of the function follows as the original.
+    '''
 
     try:
         r = requests.get(
